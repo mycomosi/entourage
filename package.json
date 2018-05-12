@@ -1,0 +1,35 @@
+{
+  "name": "Entourage",
+  "version": "0.0.1",
+  "description": "Assemble an entourage of web ui components and utilities",
+  "main": "index.js",
+  "files": [
+    "dist/Entourage.es.js"
+  ],
+  "scripts": {
+    "build": "rollup -c rollup.es.config.js",
+    "demo": "rollup -c rollup.demo.config.js"
+  },
+  "devDependencies": {
+    "rollup": "^0.52.0",
+    "rollup-plugin-babel": "^2.7.1",
+    "rollup-plugin-commonjs": "^7.0.0",
+    "rollup-plugin-json": "^2.3.0",
+    "rollup-plugin-multi-entry": "^2.0.2",
+    "rollup-plugin-node-resolve": "2.0.0",
+    "rollup-plugin-replace": "^1.2.1",
+    "rollup-plugin-uglify-es": "0.0.1"
+  },
+  "dependencies": {
+    "aeson": "0.0.3",
+    "postalworker": "^2.0.7",
+    "query-string": "^6.0.0",
+    "safe-json-stringify": "^1.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mycomosi/entourage.git"
+  },
+  "author": "Russ Stratfull <russ.stratfull@mycom-osi.com> (http://russandsonya.com/russ)",
+  "license": "ISC"
+}

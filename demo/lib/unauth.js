@@ -1,0 +1,3 @@
+{
+    window.demo.unauth = true;
+}
