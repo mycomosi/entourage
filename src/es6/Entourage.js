@@ -6,14 +6,14 @@
 import * as S from "./Strings";
 import Aeson from 'aeson';
 import {Historian} from "./historian";
-import {OauthHelper} from "./oauth-helper";
+import {AuthorizationManager} from "./authorization-manager";
 import {Logger} from "./logger";
 import PostalWorker from "postalworker";
 import {StorageManager} from "./storage-manager";
 
 let configurationCache = null,
     assembly, start, unauthorized, authorized,
-    aeson_, postalWorker_, oauthHelper_;
+    aeson_, postalWorker_, AuthorizationManager_;
 
 /**
  * Internal (hidden) functions
@@ -36,7 +36,7 @@ let _authorize = () => {
 
             // Oauth
             case S.OAUTH:
-                auth = oauthHelper_.processOauth(S.RESOLVE);
+                auth = AuthorizationManager_.processOauth(S.RESOLVE);
                 break;
         }
     }
@@ -201,7 +201,7 @@ export class Entourage {
 
         configurationCache = configuration || false;
         aeson_ = new Aeson(fetch);
-        oauthHelper_ = new OauthHelper(configuration.credentials.configuration);
+        AuthorizationManager_ = new AuthorizationManager(configuration.credentials.configuration);
 
         // Public modules & methods
 

@@ -1,11 +1,11 @@
 /**
  *
- * Oauth 2 Helper Module
+ * Authorization Manager module handles authorizations such as Oauth
  *
  */
 
 
-export class OauthHelper {
+export class AuthorizationManager {
 
     constructor(configuration) {
 
