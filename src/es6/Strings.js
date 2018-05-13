@@ -22,7 +22,7 @@ export const // Strings...
     TEXT_CSS = 'text/css',
     OBJECT = 'object',
 
-    LOGGER = '-=logger=-',
+    LOGGER = 'entourage-logger',
     LOG = 'log',
     INFO = 'info',
     WARN = 'warn',

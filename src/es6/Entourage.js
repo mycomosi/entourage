@@ -1,6 +1,6 @@
 /**
  *  Entourage Web Application Bootstrap Creator Module
- *  @Author Russ Stratfull
+ *  @Author Russ Stratfull 2018
  */
 
 import * as S from "./Strings";
@@ -8,8 +8,6 @@ import Aeson from 'aeson';
 import {Historian} from "./historian";
 import {OauthHelper} from "./oauth-helper";
 import {Logger} from "./logger";
-// import {SessionStorageHelper} from "./session-storage-helper";
-// import {LocalStorageHelper} from "./local-storage-helper";
 import PostalWorker from "postalworker";
 import {StorageManager} from "./storage-manager";
 
