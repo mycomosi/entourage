@@ -1,6 +1,6 @@
 {
   "name": "Entourage",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Assemble an entourage of web ui components and utilities",
   "main": "index.js",
   "files": [
