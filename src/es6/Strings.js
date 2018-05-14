@@ -1,15 +1,13 @@
 
 export const // Strings...
+
+    // Modules & names
     AESON = 'aeson',
+    LOGGER = 'entourage-logger',
+
+    // Things...
     DICT = "dict",
     DICTIONARY = 'dictionary',
-    BASIC = 'basic',
-    OAUTH = 'oauth',
-    RESOLVE = 'resolve',
-    RESPONSE = 'response',
-    AUTHORIZE = 'authorize',
-    SIGN_OUT = 'sign_out',
-
     FUNCTION = 'function',
     SCRIPT = 'script',
     JS = 'js',
@@ -22,7 +20,23 @@ export const // Strings...
     TEXT_CSS = 'text/css',
     OBJECT = 'object',
 
-    LOGGER = 'entourage-logger',
+    // Authorizations, user management
+    BASIC = 'basic',
+    OAUTH = 'oauth',
+    RESOLVE = 'resolve',
+    RESPONSE = 'response',
+    AUTHORIZE = 'authorize',
+    SIGN_OUT = 'sign_out',
+
+    // Storage
+    LOCAL = 'local',
+    SESSION = 'session',
+    SHARED = 'shared',
+    REMOTE = 'remote',
+    JSON = 'json',
+    BASE64 = 'base64',
+
+    // Logging
     LOG = 'log',
     INFO = 'info',
     WARN = 'warn',
@@ -30,4 +44,5 @@ export const // Strings...
     DEBUG = 'debug',
     ALL = 'all',
 
+    // Scripts / workers
     LOGWORKER = 'LogWorker.js';
