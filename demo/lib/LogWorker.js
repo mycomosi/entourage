@@ -13,7 +13,26 @@ let logWorker = {
                 msg.logMessage;
 
             // Example of a log message that is converted to readable form:
-            console.info(`[${src.index}] [${src.address}] [${msg.logLevel}] ${logMessage}`);
+            // (logs by provided "type" - info, debug, error, etc...)
+            let lvl;
+            switch (msg.logLevel) {
+                case 'log':
+                    lvl = console.log;
+                    break;
+                case 'info':
+                    lvl = console.info;
+                    break;
+                case 'warn':
+                    lvl = console.warn;
+                    break;
+                case 'error':
+                    lvl = console.error;
+                    break;
+                case 'debug':
+                    lvl = console.debug;
+                    break;
+            }
+            lvl(`[${src.index}] [${src.address}] [${msg.logLevel}] ${logMessage}`);
         });
     }
 };

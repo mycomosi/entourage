@@ -69,7 +69,7 @@ window.demo = new Entourage({
     logger: {
         // all: true
         log: false,
-        info: true,
+        info: false,
         warn: true,
         error: true,
         debug: false,
@@ -81,3 +81,12 @@ window.demo = new Entourage({
     }
 });
 
+window.onload = () => {
+    let links = document.querySelectorAll('a.cast');
+    for (let link of links) {
+        link.onclick = () => {
+            window.console.info(`Menu Click: ${link.hash.replace(/#/, '')}`);
+            return false;
+        };
+    }
+};
