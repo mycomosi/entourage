@@ -1,4 +1,4 @@
-# Entourage
+# Entourage Assembly Web Application Environment Bootstrap Creator
 
 # Build Bootstrap Script:
 npm run build
