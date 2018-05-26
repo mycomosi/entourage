@@ -74,6 +74,10 @@ window.demo = new Entourage({
         error: true,
         debug: false,
         cc: [] // Send copies to other places
+    },
+
+    storage: {
+        
     }
 });
 

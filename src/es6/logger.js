@@ -1,5 +1,8 @@
 /**
  Logger entourage logging system
+ Overrides window.console methods,
+ offering console suppression, carbon copying,
+ and routing to sharedWorker
  @Author Russ Stratfull 2018
  */
 
@@ -56,21 +59,15 @@ export class Logger {
         // Override window console methods
         window.console = {};
         window.console.log = (logMessage) => {
-            // postalworker.fire(S.LOGGER, {level: S.LOG, message: logMessage, args: arguments});
             if (!_levels.log) {
 
             }
             else {
-                //this.log('unshift');
-                //Array.prototype.unshift.call(arguments, `[LOG]: `);
-                //_log.apply(this, arguments);
-                // _log(logMessage);
                 this._cc(S.LOG, logMessage);
                 _log(logMessage);
             }
         };
         window.console.info = (logMessage) => {
-            // postalworker.fire(S.LOGGER, {level: S.INFO, message: logMessage, args: arguments});
             if (!_levels.info) {
 
             }
@@ -80,7 +77,6 @@ export class Logger {
             }
         };
         window.console.warn = (logMessage) => {
-            // postalworker.fire(S.LOGGER, {level:S.WARN, message: logMessage, args: arguments});
             if (!_levels.warn) {
 
             }
@@ -90,7 +86,6 @@ export class Logger {
             }
         };
         window.console.error = (logMessage) => {
-            // postalworker.fire(S.LOGGER, {level: S.ERROR, message: logMessage, args: arguments});
             if (!_levels.error) {
 
             }
@@ -100,7 +95,6 @@ export class Logger {
             }
         };
         window.console.debug = (logMessage) => {
-            // postalworker.fire(S.LOGGER, {level: S.DEBUG, message: logMessage, args: arguments});
             if (!_levels.debug) {
 
             }
@@ -156,25 +150,41 @@ export class Logger {
     }
 
     /**
-     *
+     *  Original window.console.log
      * @param logMessage
      */
     log(logMessage) {
         _log(logMessage);
     }
 
+    /**
+     * Original window.console.info
+     * @param logMessage
+     */
     info(logMessage) {
         _info(logMessage);
     }
 
+    /**
+     * Original window.console.warn
+     * @param logMessage
+     */
     warn(logMessage) {
         _warn(logMessage);
     }
 
+    /**
+     * Original window.console.error
+     * @param logMessage
+     */
     error(logMessage) {
         _error(logMessage);
     }
 
+    /**
+     * Original window.console.debug
+     * @param logMessage
+     */
     debug(logMessage) {
         _debug(logMessage);
     }

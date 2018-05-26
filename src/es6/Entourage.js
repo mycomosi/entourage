@@ -6,7 +6,7 @@
 import * as S from "./Strings";
 import Aeson from 'aeson';
 import {Historian} from "./historian";
-import {AuthorizationManager} from "./authorization-manager";
+import {AuthorizationManager} from "./security-manager";
 import {Logger} from "./logger";
 import PostalWorker from "postalworker";
 import {StorageManager} from "./storage-manager";
@@ -16,7 +16,7 @@ let configurationCache = null,
     aeson_, postalWorker_, AuthorizationManager_;
 
 /**
- * Internal (hidden) functions
+ * Internal functions
  * @private
  */
 let _authorize = () => {
@@ -184,7 +184,7 @@ let // Assembly stages...
         });
     },
     /**
-     *
+     * Assemble environment elements after authorization is verified
      * @private
      */
     _assembleAuthorized = () => {
@@ -236,7 +236,6 @@ export class Entourage {
          */
         this.Translator = {
             /**
-             *
              * @param type
              * @param key
              * @param defaultValue
@@ -253,7 +252,7 @@ export class Entourage {
         this.Historian = new Historian(configuration.historian);
 
         /**
-         *  Storage Manager interacts with session & local storage in the browser
+         *  Storage Manager interacts with session & local storage in the browser and also a new "shared" storage concept (sharedWorker)
          */
         this.StorageManager = new StorageManager(configuration.storage);
 

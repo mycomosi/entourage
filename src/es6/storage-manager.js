@@ -5,16 +5,9 @@
 
 import * as S from "./Strings";
 
-
 export class StorageManager {
 
     constructor(configuration) {
-        this._types = new Map([
-            [S.LOCAL, {put: this._putLocalStorage, get: this._getLocalStorage}],
-            [S.SESSION, {put: this._putSessionStorage, get: this._getSessionStorage}],
-            [S.SHARED, {put: this._putSharedStorage, get: this._getSharedStorage}],
-            [S.REMOTE, {put: this._putRemoteStorage, get: this._getRemoteStorage}]
-        ]);
 
         // Public
         /**
@@ -28,52 +21,85 @@ export class StorageManager {
                 request.type &&
                 location && location.type &&
                 this._types.has(location.type)) {
-                response = this._types.get(location.type).get(request, location);
+                response = this._types().get(location.type).get(request, location);
             }
-
             return response;
         };
 
         /**
          * Add/Update entry in storage location
          * @param units - Units of stuff that need to be stored
+         *
+         {
+            id: 'String',
+            formats: '', // json, base64
+            content: '*' // data...
+         }
+         *
          * @param location - Location to store the unit
          * @param options - (optional) Additional options object
          */
         this.put = (units, location, options = false) => {
             // Initialize response (fails with false, so set false as first value)
             let response = false;
-            // formats = new Set([S.JSON, S.BASE64, S.FUNCTION]);
-
             // A unit definition and location are both required fields
-            if (units && units.length &&
+            if (units && Array.isArray(units) && units.length &&
                 location && location.type &&
                 this._types.has(location.type)) {
-                response = this._types.get(location.type).put(units, options);
+                response = this._types().get(location.type).put(units, options);
             }
-
             return response;
         };
-    }
 
+    }
 
     // Private
-
-
+    /**
+     * Put units into localstorage
+     * @param units
+     * @param options
+     * @return {boolean}
+     * @private
+     */
     _putLocalStorage(units, options) {
-        let size_ = units.length,
-            completes_ = [],
-            fails_ = [];
-
-        for (let unit of units) {
-            window.localStorage.setItem(unit.key, unit.value);
+        let opts = options; // not implemented currently
+        let result = false,
+            addMeta = (unit) => {
+                return `[${Date.now()}][${unit.formats}]//${unit.content}`;
+            };
+        if (Array.isArray(units)) {
+            for (let unit of units) {
+                if (unit.id && unit.content) {
+                    window.localStorage.setItem(unit.id, addMeta(unit));
+                }
+            }
+        }
+        else {
+            window.localStorage.setItem(units.id, addMeta(units));
         }
 
-        return true;
+        return result;
     }
 
-    _getLocalStorage() {
-
+    /**
+     *
+     * @param request
+     * @return {string | null}
+     * @private
+     */
+    _getLocalStorage(request) {
+        if (Array.isArray(request)) {
+            let results = [];
+            for (let unit of request) {
+                results.push(
+                    window.localStorage.getItem(unit)
+                );
+            }
+            return results;
+        }
+        else {
+            return window.localStorage.getItem(request.key);
+        }
     }
 
     _putSessionStorage(units, options) {
@@ -130,5 +156,17 @@ export class StorageManager {
         }
     }
 
-
+    /**
+     *
+     * @return {Map<any, any>}
+     * @private
+     */
+    _types() {
+        return new Map([
+            [S.LOCAL, {put: this._putLocalStorage, get: this._getLocalStorage}],
+            [S.SESSION, {put: this._putSessionStorage, get: this._getSessionStorage}],
+            [S.SHARED, {put: this._putSharedStorage, get: this._getSharedStorage}],
+            [S.REMOTE, {put: this._putRemoteStorage, get: this._getRemoteStorage}]
+        ]);
+    }
 }
