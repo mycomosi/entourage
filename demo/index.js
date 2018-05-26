@@ -2,37 +2,79 @@
  * Demo of Entourage Runtime Assembly
  * @Author Russ Stratfull
  */
-
 import {Entourage} from '../dist/Entourage.es';
 
+// Demos...
 import {historian} from './historian';
 import {logger} from './logger';
 import {postalworker} from "./postalworker";
 import {securitymanager} from "./securitymanager";
 import {storagemanager} from "./storagemanager";
 import {translator} from "./translator";
+const
+    ENTOURAGE_DEMO = 'entourage-demo',
+    HISTORIAN = 'historian',
+    LOGGER = 'logger',
+    POSTALWORKER = 'postalworker',
+    SECURITYMANAGER = 'securitymanager',
+    STORAGEMANAGER = 'storagemanager',
+    TRANSLATOR = 'translator',
 
+    NAME = 'name';
 let demos = new Map();
 demos // Map all the demos to their keys
-    .set('historian', historian)
-    .set('logger', logger)
-    .set('postalworker', postalworker)
-    .set('securitymanager', securitymanager)
-    .set('storagemanager', storagemanager)
-    .set('translator', translator);
+    .set(HISTORIAN, historian)
+    .set(LOGGER, logger)
+    .set(POSTALWORKER, postalworker)
+    .set(SECURITYMANAGER, securitymanager)
+    .set(STORAGEMANAGER, storagemanager)
+    .set(TRANSLATOR, translator);
 
-
+// Show demo for each cast member
 let _showMember = (member) => {
-
-    let m = demos.get(member);
-
-    let show = document.querySelector('#demo');
-    show.innerHTML = `
+        let m = demos.get(member);
+        let prev = document.querySelector(ENTOURAGE_DEMO);
+        if (prev) {
+            document.body.removeChild(prev);
+        }
+        let demowc = document.createElement(ENTOURAGE_DEMO);
+        demowc.setAttribute(NAME, member);
+        document.body.appendChild(demowc);
+        let show = document.querySelector(ENTOURAGE_DEMO);
+        show.innerHTML = `
     <h1>${m.name}</h1>
     <h2>${m.subtext}</h2>
+    <div class="demo-content">${m.content || ''}</div>
     `;
-};
+    },
+    createWebComponent = (demos) => {
+        return class EntourageDemo extends HTMLElement {
+            constructor() {
+                super();
+                this._init();
+            }
+            createdCallback() {
+                this._init();
+            }
+            _init() {
+                this.demos = demos;
+            }
+            attachedCallback() {
+                if (this.getAttribute(NAME) &&
+                    this.demos.get(this.getAttribute(NAME)).init) {
+                    this.demos.get(this.getAttribute(NAME)).init(this);
+                }
+            }
+            detachedCallback() {
+                if (this.getAttribute(NAME) &&
+                    this.demos.get(this.getAttribute(NAME)).end) {
+                    this.demos.get(this.getAttribute(NAME)).end(this);
+                }
+            }
+        }
+    };
 
+document.registerElement(ENTOURAGE_DEMO, createWebComponent(demos));
 
 window.demo = new Entourage({
 
