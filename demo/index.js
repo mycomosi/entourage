@@ -5,6 +5,35 @@
 
 import {Entourage} from '../dist/Entourage.es';
 
+import {historian} from './historian';
+import {logger} from './logger';
+import {postalworker} from "./postalworker";
+import {securitymanager} from "./securitymanager";
+import {storagemanager} from "./storagemanager";
+import {translator} from "./translator";
+
+let demos = new Map();
+demos // Map all the demos to their keys
+    .set('historian', historian)
+    .set('logger', logger)
+    .set('postalworker', postalworker)
+    .set('securitymanager', securitymanager)
+    .set('storagemanager', storagemanager)
+    .set('translator', translator);
+
+
+let _showMember = (member) => {
+
+    let m = demos.get(member);
+
+    let show = document.querySelector('#demo');
+    show.innerHTML = `
+    <h1>${m.name}</h1>
+    <h2>${m.subtext}</h2>
+    `;
+};
+
+
 window.demo = new Entourage({
 
     // Assembly details...
@@ -85,7 +114,13 @@ window.onload = () => {
     let links = document.querySelectorAll('a.cast');
     for (let link of links) {
         link.onclick = () => {
+
+            // Demo - log menu clicks to demonstrate logging capabilities
             window.console.info(`Menu Click: ${link.hash.replace(/#/, '')}`);
+
+            // Demo - toggle display of demos
+            _showMember(link.hash.replace(/#/, ''));
+
             return false;
         };
     }

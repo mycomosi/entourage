@@ -105,30 +105,59 @@ export class StorageManager {
         }
     }
 
+    /**
+     *
+     * @param units
+     * @param options
+     * @private
+     */
     _putSessionStorage(units, options) {
 
     }
 
+    /**
+     *
+     * @private
+     */
     _getSessionStorage() {
 
     }
 
+    /**
+     *
+     * @param units
+     * @param options
+     * @private
+     */
     _putSharedStorage(units, options) {
 
     }
 
+    /**
+     *
+     * @private
+     */
     _getSharedStorage() {
 
     }
 
+    /**
+     *
+     * @param units
+     * @param options
+     * @private
+     */
     _putRemoteStorage(units, options) {
 
     }
 
+    /**
+     *
+     * @private
+     */
     _getRemoteStorage() {
 
     }
-
 
     /**
      * Generate a random key (RFC4122 UUID
