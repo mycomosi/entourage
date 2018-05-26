@@ -24,7 +24,8 @@
     "aeson": "0.0.3",
     "postalworker": "^2.0.9",
     "query-string": "^6.0.0",
-    "safe-json-stringify": "^1.1.0"
+    "safe-json-stringify": "^1.1.0",
+    "uuid": "^3.2.1"
   },
   "repository": {
     "type": "git",

@@ -5,6 +5,8 @@
 
 import * as S from "./Strings";
 
+import uuidv4 from 'uuid';
+
 export class StorageManager {
 
     constructor(configuration) {
@@ -31,8 +33,7 @@ export class StorageManager {
          * @param units - Units of stuff that need to be stored
          *
          {
-            id: 'String',
-            formats: '', // json, base64
+            id: 'String', // *optional*
             content: '*' // data...
          }
          *
@@ -126,6 +127,17 @@ export class StorageManager {
 
     _getRemoteStorage() {
 
+    }
+
+
+    /**
+     * Generate a random key (RFC4122 UUID
+     * https://www.npmjs.com/package/uuid
+     * @return {string} - Example: '416ac246-e7ac-49ff-93b4-f7e94d997e6b'
+     * @private
+     */
+    _getUniqueKey() {
+        return uuidv4();
     }
 
     /**
