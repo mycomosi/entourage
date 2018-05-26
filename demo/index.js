@@ -77,7 +77,7 @@ window.demo = new Entourage({
     },
 
     storage: {
-        
+
     }
 });
 

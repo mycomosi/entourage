@@ -84,10 +84,12 @@ export class StorageManager {
     /**
      *
      * @param request
+     * @param options
      * @return {string | null}
      * @private
      */
-    _getLocalStorage(request) {
+    _getLocalStorage(request, options) {
+        let opts = options; // not implemented currently
         if (Array.isArray(request)) {
             let results = [];
             for (let unit of request) {
