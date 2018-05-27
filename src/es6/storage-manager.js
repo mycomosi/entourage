@@ -7,6 +7,13 @@ import * as S from "./Strings";
 
 import uuidv4 from 'uuid';
 
+const // Types as constants
+    STRING = 'string',
+    NUMBER = 'number',
+    BOOLEAN = 'boolean',
+    OBJECT = 'object',
+    UNDEFINED = 'undefined';
+
 export class StorageManager {
 
     constructor(configuration) {
@@ -22,8 +29,8 @@ export class StorageManager {
             if (request &&
                 request.type &&
                 location && location.type &&
-                this._types.has(location.type)) {
-                response = this._types().get(location.type).get(request, location);
+                this._storageTypes().has(location.type)) {
+                response = this._storageTypes().get(location.type).get(request, location);
             }
             return response;
         };
@@ -43,11 +50,12 @@ export class StorageManager {
         this.put = (units, location, options = false) => {
             // Initialize response (fails with false, so set false as first value)
             let response = false;
-            // A unit definition and location are both required fields
-            if (units && Array.isArray(units) && units.length &&
+            // A unit definition(s) and location are both required arguments
+            if (units &&
                 location && location.type &&
-                this._types.has(location.type)) {
-                response = this._types().get(location.type).put(units, options);
+                this._storageTypes().has(location.type)) {
+                let iUnits = this._prePackUnits((Array.isArray(units)) ? units : [units]);
+                response = this._storageTypes().get(location.type).put(iUnits, options);
             }
             return response;
         };
@@ -55,6 +63,60 @@ export class StorageManager {
     }
 
     // Private
+
+    /**
+     *
+     * @param units
+     * @param options
+     * @private
+     */
+    _prePackUnits(units, options) {
+        return units.map(unit => {
+            let u = {},
+                dataType = typeof unit.value,
+                now = Date.now();
+            u.key = unit.key;
+            u.type = dataType.toLowerCase();
+            u.value = unit.value;
+            u.created = now;
+            u.lastModified = now;
+            return u;
+            // Save original type
+            // switch (dataType.toLowerCase()) {
+            //
+            //     case STRING:
+            //         if (dataType === '') {
+            //             window.console.warn(`storage-manager skipped packaging unit ${unit.key} - invalid type`);
+            //             break;
+            //         }
+            //         u.value = btoa(unit.value);
+            //         break;
+            //
+            //     case NUMBER:
+            //         u.value = btoa(unit.value);
+            //         break;
+            //
+            //     case BOOLEAN:
+            //
+            //         break;
+            //
+            //     case OBJECT:
+            //         if (dataType === null) {
+            //             window.console.warn(`storage-manager skipped packaging unit ${unit.key} - invalid type`);
+            //             break;
+            //         }
+            //
+            //         break;
+            //
+            //     default:
+            //         // functions, undefined, null end up here
+            //         window.console.warn(`storage-manager skipped packaging unit ${unit.key} - invalid type`);
+            // }
+
+        });
+    }
+
+
     /**
      * Put units into localstorage
      * @param units
@@ -63,23 +125,36 @@ export class StorageManager {
      * @private
      */
     _putLocalStorage(units, options) {
-        let opts = options; // not implemented currently
         let result = false,
-            addMeta = (unit) => {
-                return `[${Date.now()}][${unit.formats}]//${unit.content}`;
-            };
-        if (Array.isArray(units)) {
-            for (let unit of units) {
-                if (unit.id && unit.content) {
-                    window.localStorage.setItem(unit.id, addMeta(unit));
-                }
+            puts = new Map();
+        for (let unit of units) {
+            // Is it already in storage?
+            if (!!window.localStorage.getItem(unit.key)) {
+                let cache = JSON.parse(atob(window.localStorage.getItem(unit.key)));
+                let update = btoa(JSON.stringify({
+                    type: unit.type,
+                    created: cache.created,
+                    lastModified: Date.now(),
+                    value: unit.value
+                }));
+                // puts.set(unit.key, update);
+                console.info('update');
+                console.info(atob(update));
+                window.localStorage.setItem(unit.key, update);
+            }
+            else {
+                let update = btoa(JSON.stringify({
+                    type: unit.type,
+                    created: unit.created,
+                    lastModified: unit.lastModified,
+                    value: unit.value
+                }));
+                // puts.set(unit.key, update);
+                window.localStorage.setItem(unit.key, update);
             }
         }
-        else {
-            window.localStorage.setItem(units.id, addMeta(units));
-        }
 
-        return result;
+        console.info(puts);
     }
 
     /**
@@ -204,7 +279,7 @@ export class StorageManager {
      * @return {Map<any, any>}
      * @private
      */
-    _types() {
+    _storageTypes() {
         return new Map([
             [S.LOCAL, {put: this._putLocalStorage, get: this._getLocalStorage}],
             [S.SESSION, {put: this._putSessionStorage, get: this._getSessionStorage}],

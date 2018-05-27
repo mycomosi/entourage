@@ -140,7 +140,7 @@ window.demo = new Entourage({
     logger: {
         // all: true
         log: false,
-        info: false,
+        info: true,
         warn: true,
         error: true,
         debug: false,
