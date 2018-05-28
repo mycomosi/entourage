@@ -14,6 +14,23 @@ const // Types as constants
     OBJECT = 'object',
     UNDEFINED = 'undefined';
 
+let decode64 = (value) => {
+        try {
+            return JSON.parse(atob(value));
+        }
+        catch(e) {
+            return atob(value);
+        }
+    },
+    encode64 = (value) => {
+        try {
+            return btoa(JSON.stringify(value));
+        }
+        catch(e) {
+            return btoa(value);
+        }
+    };
+
 export class StorageManager {
 
     constructor(configuration) {
@@ -23,16 +40,36 @@ export class StorageManager {
          * Get entry from storage location
          * @param request
          * @param location
+         * @param options *optional*
          */
-        this.get = (request, location) => {
+        this.get = (request, location, options) => {
             let response = false;
             if (request &&
-                request.type &&
                 location && location.type &&
                 this._storageTypes().has(location.type)) {
-                response = this._storageTypes().get(location.type).get(request, location);
+                response = this._storageTypes().get(location.type).get(request, options);
             }
-            return response;
+            return response.value;
+        };
+
+        /**
+         *
+         * @param request
+         * @param location
+         * @return {{type, created: *, lastModified: *|number|string}}
+         */
+        this.info = (request, location) => {
+            let response = false;
+            if (request &&
+                location && location.type &&
+                this._storageTypes().has(location.type)) {
+                response = this._storageTypes().get(location.type).get(request);
+            }
+            return {
+                type: response.type,
+                created: response.created,
+                lastModified: response.lastModified
+            };
         };
 
         /**
@@ -56,6 +93,23 @@ export class StorageManager {
                 this._storageTypes().has(location.type)) {
                 let iUnits = this._prePackUnits((Array.isArray(units)) ? units : [units]);
                 response = this._storageTypes().get(location.type).put(iUnits, options);
+            }
+            return response;
+        };
+
+        /**
+         *
+         * @param units
+         * @param location
+         * @param options
+         * @return {boolean}
+         */
+        this.delete = (units, location, options) => {
+            let response = false;
+            if (units &&
+                location && location.type &&
+                this._storageTypes().has(location.type)) {
+                response = this._storageTypes().get(location.type).del(request);
             }
             return response;
         };
@@ -116,7 +170,6 @@ export class StorageManager {
         });
     }
 
-
     /**
      * Put units into localstorage
      * @param units
@@ -131,30 +184,26 @@ export class StorageManager {
             // Is it already in storage?
             if (!!window.localStorage.getItem(unit.key)) {
                 let cache = JSON.parse(atob(window.localStorage.getItem(unit.key)));
-                let update = btoa(JSON.stringify({
+                let update = encode64({
                     type: unit.type,
                     created: cache.created,
                     lastModified: Date.now(),
                     value: unit.value
-                }));
-                // puts.set(unit.key, update);
-                console.info('update');
-                console.info(atob(update));
+                });
+
                 window.localStorage.setItem(unit.key, update);
             }
             else {
-                let update = btoa(JSON.stringify({
+                let update = encode64({
                     type: unit.type,
                     created: unit.created,
                     lastModified: unit.lastModified,
                     value: unit.value
-                }));
-                // puts.set(unit.key, update);
+                });
+
                 window.localStorage.setItem(unit.key, update);
             }
         }
-
-        console.info(puts);
     }
 
     /**
@@ -165,18 +214,23 @@ export class StorageManager {
      * @private
      */
     _getLocalStorage(request, options) {
-        let opts = options; // not implemented currently
+        let results = [];
         if (Array.isArray(request)) {
-            let results = [];
-            for (let unit of request) {
-                results.push(
-                    window.localStorage.getItem(unit)
-                );
+            for (let r of request) {
+                let result = window.localStorage.getItem(r);
+                if (result) {
+                    let parsed = decode64(result);
+                    results.push(parsed);
+                }
             }
             return results;
         }
         else {
-            return window.localStorage.getItem(request.key);
+            let result = window.localStorage.getItem(request);
+            if (result) {
+                return decode64(result);
+            }
+            else return false;
         }
     }
 
@@ -234,6 +288,23 @@ export class StorageManager {
 
     }
 
+
+    _removeLocalStorage() {
+
+    }
+
+    _removeSessionStorage() {
+
+    }
+
+    _removeSharedStorage() {
+
+    }
+
+    _removeRemoteStorage() {
+
+    }
+
     /**
      * Generate a random key (RFC4122 UUID
      * https://www.npmjs.com/package/uuid
@@ -245,46 +316,16 @@ export class StorageManager {
     }
 
     /**
-     *  Decode encrypted object from base64 encoded string
-     *  @param value
-     *  @return {*}
-     *  @private
-     */
-    _decode64(value) {
-        try {
-            return JSON.parse(atob(value));
-        }
-        catch(e) {
-            return atob(value);
-        }
-    }
-
-    /**
-     *  Encode object into base64 encoded string
-     *  @param value
-     *  @return {string}
-     *  @private
-     */
-    _encode64(value) {
-        try {
-            return btoa(JSON.stringify(value));
-        }
-        catch(e) {
-            return btoa(value);
-        }
-    }
-
-    /**
      *
      * @return {Map<any, any>}
      * @private
      */
     _storageTypes() {
         return new Map([
-            [S.LOCAL, {put: this._putLocalStorage, get: this._getLocalStorage}],
-            [S.SESSION, {put: this._putSessionStorage, get: this._getSessionStorage}],
-            [S.SHARED, {put: this._putSharedStorage, get: this._getSharedStorage}],
-            [S.REMOTE, {put: this._putRemoteStorage, get: this._getRemoteStorage}]
+            [S.LOCAL, {put: this._putLocalStorage, get: this._getLocalStorage, del: this._removeLocalStorage}],
+            [S.SESSION, {put: this._putSessionStorage, get: this._getSessionStorage, del: this._removeSessionStorage}],
+            [S.SHARED, {put: this._putSharedStorage, get: this._getSharedStorage, del: this._removeSharedStorage}],
+            [S.REMOTE, {put: this._putRemoteStorage, get: this._getRemoteStorage, del: this._removeRemoteStorage}]
         ]);
     }
 }
