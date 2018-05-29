@@ -49,7 +49,7 @@ export class StorageManager {
                 this._storageTypes().has(location.type)) {
                 response = this._storageTypes().get(location.type).get(request, options);
             }
-            return response.value;
+            return response;
         };
 
         /**
@@ -109,7 +109,8 @@ export class StorageManager {
             if (units &&
                 location && location.type &&
                 this._storageTypes().has(location.type)) {
-                response = this._storageTypes().get(location.type).del(request);
+                let iUnits = (Array.isArray(units)) ? units : [units];
+                response = this._storageTypes().get(location.type).del(iUnits, options);
             }
             return response;
         };
@@ -214,24 +215,12 @@ export class StorageManager {
      * @private
      */
     _getLocalStorage(request, options) {
-        let results = [];
-        if (Array.isArray(request)) {
-            for (let r of request) {
-                let result = window.localStorage.getItem(r);
-                if (result) {
-                    let parsed = decode64(result);
-                    results.push(parsed);
-                }
-            }
-            return results;
+        let result = window.localStorage.getItem(request);
+        if (result) {
+            let parsed = decode64(result);
+            return parsed.value;
         }
-        else {
-            let result = window.localStorage.getItem(request);
-            if (result) {
-                return decode64(result);
-            }
-            else return false;
-        }
+        else return false;
     }
 
     /**
@@ -288,9 +277,15 @@ export class StorageManager {
 
     }
 
-
-    _removeLocalStorage() {
-
+    /**
+     *
+     * @param keys
+     * @private
+     */
+    _removeLocalStorage(keys) {
+        for (let key of keys) {
+            window.localStorage.removeItem(key);
+        }
     }
 
     _removeSessionStorage() {
