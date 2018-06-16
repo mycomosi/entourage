@@ -47,9 +47,9 @@ export class StorageManager {
             if (request &&
                 location && location.type &&
                 this._storageTypes().has(location.type)) {
-                response = this._storageTypes().get(location.type).get(request, options);
+                response = this._storageTypes().get(location.type).get(request, options).value;
             }
-            return response;
+            return response || false;
         };
 
         /**
@@ -64,25 +64,28 @@ export class StorageManager {
                 location && location.type &&
                 this._storageTypes().has(location.type)) {
                 response = this._storageTypes().get(location.type).get(request);
+                return (response) ? {
+                    type: response.type,
+                    created: response.created,
+                    lastModified: response.lastModified
+                } : false;
             }
-            return {
-                type: response.type,
-                created: response.created,
-                lastModified: response.lastModified
-            };
+            else {
+                return false;
+            }
         };
 
         /**
          * Add/Update entry in storage location
-         * @param units - Units of stuff that need to be stored
+         * @param {object | array} units - Units of stuff that need to be stored
          *
          {
-            id: 'String', // *optional*
-            content: '*' // data...
+            key: 'String',
+            value: '*'
          }
          *
-         * @param location - Location to store the unit
-         * @param options - (optional) Additional options object
+         * @param {object} location - Location to store the unit
+         * @param {object} options - (optional) Additional options object
          */
         this.put = (units, location, options = false) => {
             // Initialize response (fails with false, so set false as first value)
@@ -110,9 +113,14 @@ export class StorageManager {
                 location && location.type &&
                 this._storageTypes().has(location.type)) {
                 let iUnits = (Array.isArray(units)) ? units : [units];
-                response = this._storageTypes().get(location.type).del(iUnits, options);
+                this._storageTypes().get(location.type).del(iUnits, options);
+
+                // todo: To return validity of request, a potential solution could be to:
+                // Do a query, by type of course (local, shared, etc...)
+                // and if a validation callback is defined for that type
+                // use it to check if the request succeeded and return true/false
+                // (not currently sure how to address displaying failure info though...)
             }
-            return response;
         };
 
     }
@@ -195,10 +203,11 @@ export class StorageManager {
                 window.localStorage.setItem(unit.key, update);
             }
             else {
+                let create = Date.now();
                 let update = encode64({
                     type: unit.type,
-                    created: unit.created,
-                    lastModified: unit.lastModified,
+                    created: create,
+                    lastModified: create,
                     value: unit.value
                 });
 
@@ -218,7 +227,7 @@ export class StorageManager {
         let result = window.localStorage.getItem(request);
         if (result) {
             let parsed = decode64(result);
-            return parsed.value;
+            return parsed;
         }
         else return false;
     }
