@@ -1,6 +1,6 @@
 {
   "name": "entourageassembler",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Assemble an entourage of web ui components and utilities",
   "main": "index.js",
   "module": "dist/Entourage.es.js",
