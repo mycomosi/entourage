@@ -13,6 +13,8 @@ const // Types as constants
     NUMBER = 'number',
     BOOLEAN = 'boolean',
     OBJECT = 'object',
+    MAP = 'map',
+    SET = 'set',
     ARRAY = 'array',
     UNDEFINED = 'undefined';
 
@@ -35,6 +37,12 @@ let decode64 = (value) => {
         }
     };
 
+function es6Type(obj) {
+    if (obj instanceof Map) return MAP;
+    else if (obj instanceof Set) return SET;
+    else if (obj instanceof Array) return ARRAY;
+    else return OBJECT;
+}
 
 export class StorageManager {
 
@@ -159,9 +167,9 @@ export class StorageManager {
             let u = {},
                 dataType = typeof unit.value,
                 now = Date.now();
-
+            // All the interesting types show as "object"
             if (dataType === OBJECT) {
-                dataType = ARRAY;
+                dataType = es6Type(unit.value);
             }
 
             u.key = unit.key;
