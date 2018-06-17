@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "aeson": "0.0.3",
+    "json8": "^0.9.2",
     "postalworker": "^2.0.9",
     "query-string": "^6.0.0",
     "safe-json-stringify": "^1.1.0",

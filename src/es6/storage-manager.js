@@ -4,19 +4,23 @@
  */
 
 import * as S from "./Strings";
-
+import oo from "json8";
 import uuidv4 from 'uuid';
+
 
 const // Types as constants
     STRING = 'string',
     NUMBER = 'number',
     BOOLEAN = 'boolean',
     OBJECT = 'object',
+    ARRAY = 'array',
     UNDEFINED = 'undefined';
+
+const json8 = oo;
 
 let decode64 = (value) => {
         try {
-            return JSON.parse(atob(value));
+            return json8.parse(atob(value));
         }
         catch(e) {
             return atob(value);
@@ -24,12 +28,13 @@ let decode64 = (value) => {
     },
     encode64 = (value) => {
         try {
-            return btoa(JSON.stringify(value));
+            return btoa(json8.serialize(value));
         }
         catch(e) {
             return btoa(value);
         }
     };
+
 
 export class StorageManager {
 
@@ -123,10 +128,26 @@ export class StorageManager {
             }
         };
 
+        /**
+         * Serialize the repository by type
+         * @param location
+         * @param options
+         * @return {string | boolean} - Returns json string of current repository data
+         */
+        this.serialize = (location, options) => {
+            let response = false;
+            if (location && location.type &&
+                this._storageTypes().has(location.type)) {
+                response = this._storageTypes().get(location.type).serialize();
+            }
+            return response;
+        };
+
     }
 
     // Private
 
+    // LocalStorage
     /**
      *
      * @param units
@@ -138,6 +159,11 @@ export class StorageManager {
             let u = {},
                 dataType = typeof unit.value,
                 now = Date.now();
+
+            if (dataType === OBJECT) {
+                dataType = ARRAY;
+            }
+
             u.key = unit.key;
             u.type = dataType.toLowerCase();
             u.value = unit.value;
@@ -192,7 +218,7 @@ export class StorageManager {
         for (let unit of units) {
             // Is it already in storage?
             if (!!window.localStorage.getItem(unit.key)) {
-                let cache = JSON.parse(atob(window.localStorage.getItem(unit.key)));
+                let cache = json8.parse(atob(window.localStorage.getItem(unit.key)));
                 let update = encode64({
                     type: unit.type,
                     created: cache.created,
@@ -226,12 +252,41 @@ export class StorageManager {
     _getLocalStorage(request, options) {
         let result = window.localStorage.getItem(request);
         if (result) {
-            let parsed = decode64(result);
-            return parsed;
+            return decode64(result);
         }
         else return false;
     }
 
+    /**
+     *
+     * @param keys
+     * @private
+     */
+    _removeLocalStorage(keys) {
+        for (let key of keys) {
+            window.localStorage.removeItem(key);
+        }
+    }
+
+    /**
+     *
+     * @return {string}
+     * @private
+     */
+    _serializeLocalStorage() {
+        let repository = window.localStorage;
+        let out = {};
+        Object.keys(repository).forEach(key => {
+            try {
+                window.atob(repository[key]);
+                out[key] = decode64(repository[key]);
+            }
+            catch(e) {}
+        });
+        return JSON.stringify(out);
+    }
+
+    // SessionStorage
     /**
      *
      * @param units
@@ -239,17 +294,80 @@ export class StorageManager {
      * @private
      */
     _putSessionStorage(units, options) {
+        let result = false,
+            puts = new Map();
+        for (let unit of units) {
+            // Is it already in storage?
+            if (!!window.sessionStorage.getItem(unit.key)) {
+                let cache = json8.parse(atob(window.sessionStorage.getItem(unit.key)));
+                let update = encode64({
+                    type: unit.type,
+                    created: cache.created,
+                    lastModified: Date.now(),
+                    value: unit.value
+                });
 
+                window.sessionStorage.setItem(unit.key, update);
+            }
+            else {
+                let create = Date.now();
+                let update = encode64({
+                    type: unit.type,
+                    created: create,
+                    lastModified: create,
+                    value: unit.value
+                });
+
+                window.sessionStorage.setItem(unit.key, update);
+            }
+        }
     }
 
     /**
      *
+     * @param request
+     * @param options
+     * @return {*}
      * @private
      */
-    _getSessionStorage() {
-
+    _getSessionStorage(request, options) {
+        let result = window.sessionStorage.getItem(request);
+        if (result) {
+            return decode64(result);
+        }
+        else return false;
     }
 
+    /**
+     *
+     * @param keys
+     * @private
+     */
+    _removeSessionStorage(keys) {
+        for (let key of keys) {
+            window.sessionStorage.removeItem(key);
+        }
+    }
+
+    /**
+     *
+     * @return {string}
+     * @private
+     */
+    _serializeSessionStorage() {
+        let repository = window.sessionStorage;
+        let out = {};
+        Object.keys(repository).forEach(key => {
+            try {
+                window.atob(repository[key]);
+                out[key] = decode64(repository[key]);
+            }
+            catch(e) {}
+        });
+        return JSON.stringify(out);
+    }
+
+    // SharedStorage
     /**
      *
      * @param units
@@ -278,6 +396,7 @@ export class StorageManager {
 
     }
 
+    // Remote Storage
     /**
      *
      * @private
@@ -285,27 +404,16 @@ export class StorageManager {
     _getRemoteStorage() {
 
     }
-
-    /**
-     *
-     * @param keys
-     * @private
-     */
-    _removeLocalStorage(keys) {
-        for (let key of keys) {
-            window.localStorage.removeItem(key);
-        }
-    }
-
-    _removeSessionStorage() {
-
-    }
-
     _removeSharedStorage() {
 
     }
-
     _removeRemoteStorage() {
+
+    }
+    _serializeSharedStorage() {
+
+    }
+    _serializeRemoteStorage() {
 
     }
 
@@ -326,10 +434,30 @@ export class StorageManager {
      */
     _storageTypes() {
         return new Map([
-            [S.LOCAL, {put: this._putLocalStorage, get: this._getLocalStorage, del: this._removeLocalStorage}],
-            [S.SESSION, {put: this._putSessionStorage, get: this._getSessionStorage, del: this._removeSessionStorage}],
-            [S.SHARED, {put: this._putSharedStorage, get: this._getSharedStorage, del: this._removeSharedStorage}],
-            [S.REMOTE, {put: this._putRemoteStorage, get: this._getRemoteStorage, del: this._removeRemoteStorage}]
+            [S.LOCAL, {
+                put: this._putLocalStorage,
+                get: this._getLocalStorage,
+                del: this._removeLocalStorage,
+                serialize: this._serializeLocalStorage
+            }],
+            [S.SESSION, {
+                put: this._putSessionStorage,
+                get: this._getSessionStorage,
+                del: this._removeSessionStorage,
+                serialize: this._serializeSessionStorage
+            }],
+            [S.SHARED, {
+                put: this._putSharedStorage,
+                get: this._getSharedStorage,
+                del: this._removeSharedStorage,
+                serialize: this._serializeSharedStorage
+            }],
+            [S.REMOTE, {
+                put: this._putRemoteStorage,
+                get: this._getRemoteStorage,
+                del: this._removeRemoteStorage,
+                serialize: this._serializeRemoteStorage
+            }]
         ]);
     }
 }
