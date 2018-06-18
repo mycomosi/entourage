@@ -126,12 +126,11 @@ window.demo = new Entourage({
 
     // Postal communication details...
     postal: {
-        PostalRoute: 'lib/', // todo: @Russ - Make this not static!!!
+        PostalRoute: 'lib/', // todo: @Russ - Impove???
         worker: {
             assembly: {}
         }
     },
-
 
     historian: {
 
@@ -147,7 +146,9 @@ window.demo = new Entourage({
         cc: [] // Send copies to other places
     },
 
+    // StorageManager module
     storage: {
+        // SharedLocation: 'lib/' // todo: @Russ - Impove???
 
     }
 });

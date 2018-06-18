@@ -254,7 +254,57 @@ export class Entourage {
         /**
          *  Storage Manager interacts with session & local storage in the browser and also a new "shared" storage concept (sharedWorker)
          */
-        this.StorageManager = new StorageManager(configuration.storage);
+        if (configurationCache.storage) {
+
+            if (!configurationCache.storage.entourage && configurationCache.storage) {
+
+                // configurationCache.storage.initialize = () => {
+                //     this.PostalWorker.on(
+                //         'entourage-client',
+                //         this.StorageManager.
+                //     );
+                // };
+                configurationCache.storage.put = (units, options) => {
+
+                    // console.info('entourage-put');
+                    let puts = [];
+                    for (let unit of units) {
+                        let create = Date.now();
+                        puts.push(this.StorageManager.encode({
+                            type: unit.type,
+                            created: create,
+                            lastModified: create,
+                            value: unit.value
+                        }));
+                    }
+
+                    this.PostalWorker.fireAll(
+                        'entourage-storage',
+                        {
+                            action: 'put',
+                            request: puts
+                        }
+                    );
+
+                };
+
+                configurationCache.storage.get = (request) => {
+
+                };
+
+                configurationCache.storage.info = () => {};
+
+                configurationCache.storage.delete = () => {};
+
+                configurationCache.storage.serialize = () => {};
+            }
+
+            this.StorageManager = new StorageManager(configuration.storage);
+
+            if (this.PostalWorker) {
+                this.PostalWorker.load('StorageWorker.js');
+            }
+        }
 
         // Configuration required to assemble...
         if (configurationCache) {

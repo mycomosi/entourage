@@ -1,5 +1,6 @@
 /**
  *  Manage local, session, & *shared* storage systems
+ *  (Shared is user defined, although when used as part of entourage, it uses PostalWorker)
  *  @Author Russ Stratfull 2018
  */
 
@@ -20,6 +21,11 @@ const // Types as constants
 
 const json8 = oo;
 
+/**
+ * Decode json8 serialized objects from base64 string
+ * @param value
+ * @return {string}
+ */
 let decode64 = (value) => {
         try {
             return json8.parse(atob(value));
@@ -28,6 +34,11 @@ let decode64 = (value) => {
             return atob(value);
         }
     },
+    /**
+     * Encode json8 serialized objects to base64 string
+     * @param value
+     * @return {string}
+     */
     encode64 = (value) => {
         try {
             return btoa(json8.serialize(value));
@@ -37,12 +48,23 @@ let decode64 = (value) => {
         }
     };
 
+/**
+ *
+ * @param obj
+ * @return {string}
+ */
 function es6Type(obj) {
     if (obj instanceof Map) return MAP;
     else if (obj instanceof Set) return SET;
     else if (obj instanceof Array) return ARRAY;
     else return OBJECT;
 }
+
+let sharedPut,
+    sharedGet,
+    sharedInfo,
+    sharedDelete,
+    sharedSerialize;
 
 export class StorageManager {
 
@@ -151,6 +173,31 @@ export class StorageManager {
             return response;
         };
 
+        /**
+         * Inject shared functions
+         */
+        if (typeof configuration.put === S.FUNCTION) {
+            sharedPut = configuration.put || function () {
+            }; // todo
+        }
+        if (typeof configuration.get === S.FUNCTION) {
+            sharedGet = configuration.get || function () {
+            }; // todo
+        }
+        if (typeof configuration.info === S.FUNCTION) {
+            sharedInfo = configuration.info || function () {
+            }; // todo
+        }
+        if (typeof configuration.delete === S.FUNCTION) {
+            sharedDelete = configuration.delete || function () {
+            }; // todo
+        }
+        if (typeof configuration.serialize === S.FUNCTION) {
+            sharedSerialize = configuration.serialize || function () {
+            }; // todo
+
+        }
+
     }
 
     // Private
@@ -221,8 +268,7 @@ export class StorageManager {
      * @private
      */
     _putLocalStorage(units, options) {
-        let result = false,
-            puts = new Map();
+        let result = false;
         for (let unit of units) {
             // Is it already in storage?
             if (!!window.localStorage.getItem(unit.key)) {
@@ -302,8 +348,7 @@ export class StorageManager {
      * @private
      */
     _putSessionStorage(units, options) {
-        let result = false,
-            puts = new Map();
+        let result = false;
         for (let unit of units) {
             // Is it already in storage?
             if (!!window.sessionStorage.getItem(unit.key)) {
@@ -377,52 +422,40 @@ export class StorageManager {
 
     // SharedStorage
     /**
-     *
+     * Put units into shared storage (worker thread)
      * @param units
      * @param options
      * @private
      */
     _putSharedStorage(units, options) {
+        if (sharedPut) return sharedPut(units, options);
+    }
 
+    /**
+     * Get units from shared storage
+     * @private
+     */
+    _getSharedStorage(request, options) {
+        if (sharedGet) return sharedGet(request, options)
     }
 
     /**
      *
+     * @param keys
+     * @return {*}
      * @private
      */
-    _getSharedStorage() {
-
+    _removeSharedStorage(keys) {
+        if (sharedDelete) return sharedDelete(keys);
     }
 
     /**
      *
-     * @param units
-     * @param options
+     * @return {*}
      * @private
      */
-    _putRemoteStorage(units, options) {
-
-    }
-
-    // Remote Storage
-    /**
-     *
-     * @private
-     */
-    _getRemoteStorage() {
-
-    }
-    _removeSharedStorage() {
-
-    }
-    _removeRemoteStorage() {
-
-    }
     _serializeSharedStorage() {
-
-    }
-    _serializeRemoteStorage() {
-
+        if (sharedSerialize) return sharedSerialize();
     }
 
     /**
@@ -459,13 +492,15 @@ export class StorageManager {
                 get: this._getSharedStorage,
                 del: this._removeSharedStorage,
                 serialize: this._serializeSharedStorage
-            }],
-            [S.REMOTE, {
-                put: this._putRemoteStorage,
-                get: this._getRemoteStorage,
-                del: this._removeRemoteStorage,
-                serialize: this._serializeRemoteStorage
             }]
         ]);
+    }
+
+    encode(unit) {
+        return encode64(unit);
+    }
+
+    decode(unit) {
+        return decode64(unit);
     }
 }

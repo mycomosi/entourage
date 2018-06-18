@@ -4,8 +4,8 @@
  */
 
 
-let logWorker = {
-    init: () => {
+const logWorker = {
+    _start: () => {
         postalSharedWorker.on('entourage-logger', (msg, src) => {
 
             let logMessage = (typeof msg.logMessage === "object") ?
@@ -31,10 +31,12 @@ let logWorker = {
                 case 'debug':
                     lvl = console.debug;
                     break;
+                default:
+                    lvl = console.log;
             }
             lvl(`[${src.index}] [${src.address}] [${msg.logLevel}] ${logMessage}`);
         });
     }
 };
 
-logWorker.init();
+logWorker._start();
