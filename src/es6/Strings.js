@@ -19,6 +19,12 @@ export const // Strings...
     HEAD = 'head',
     TEXT_CSS = 'text/css',
     OBJECT = 'object',
+    PUT = 'put',
+    GET = 'get',
+    SERIALIZE = 'serialize',
+    DELETE = 'delete',
+    UN = 'un',
+    PRIVATE = 'private',
 
     // Authorizations, user management
     BASIC = 'basic',
@@ -45,4 +51,9 @@ export const // Strings...
     ALL = 'all',
 
     // Scripts / workers
-    LOGWORKER = 'LogWorker.js';
+    LOGWORKER = 'LogWorker.js',
+    STORAGE_WORKER = 'StorageWorker.js',
+
+
+    ENTOURAGE_STORAGE = 'entourage-storage',
+    ENTOURAGE_STORAGE_RESPONSE = 'entourage-storage-response';

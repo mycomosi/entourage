@@ -152,6 +152,13 @@ let // Synchronous loaders...
         }
     };
 
+
+let _convertType = (entry) => {
+    console.info(entry);
+    return entry;
+};
+
+
 let // Assembly stages...
     /**
      * Start assembling before any state/session info has been determined
@@ -194,6 +201,9 @@ let // Assembly stages...
             });
         });
     };
+
+
+
 
 export class Entourage {
 
@@ -265,12 +275,11 @@ export class Entourage {
                 //     );
                 // };
                 configurationCache.storage.put = (units, options) => {
-
-                    // console.info('entourage-put');
                     let puts = [];
                     for (let unit of units) {
                         let create = Date.now();
                         puts.push(this.StorageManager.encode({
+                            key: unit.key,
                             type: unit.type,
                             created: create,
                             lastModified: create,
@@ -278,11 +287,11 @@ export class Entourage {
                         }));
                     }
 
-                    this.PostalWorker.fireAll(
-                        'entourage-storage',
+                    this.PostalWorker.fire(
+                        S.ENTOURAGE_STORAGE,
                         {
-                            action: 'put',
-                            request: puts
+                            action: S.PUT,
+                            requests: puts
                         }
                     );
 
@@ -296,13 +305,38 @@ export class Entourage {
 
                 configurationCache.storage.delete = () => {};
 
-                configurationCache.storage.serialize = () => {};
+                configurationCache.storage.serialize = () => {
+                    this.PostalWorker.fire(
+                        S.ENTOURAGE_STORAGE,
+                        {
+                            action: S.SERIALIZE,
+                            requests: [""] // todo: Russ - Potentially add query/filter expression here?
+                        }
+                    );
+                };
             }
 
             this.StorageManager = new StorageManager(configuration.storage);
 
             if (this.PostalWorker) {
-                this.PostalWorker.load('StorageWorker.js');
+                // Subscribe to postal message classes used by storage
+                this.PostalWorker.on(S.ENTOURAGE_STORAGE_RESPONSE, (response) => {
+                    let parse = JSON.parse(response);
+                    if (parse.action) {
+                        switch (parse.action) {
+
+
+
+                            case S.SERIALIZE:
+                                for (let s of Object.keys(parse.store)) {
+                                    parse.store[s] = _convertType(parse.store[s]);
+                                }
+                                console.info(parse.store);
+                                break;
+                        }
+                    }
+                });
+                this.PostalWorker.load(S.STORAGE_WORKER);
             }
         }
 

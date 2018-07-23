@@ -59,9 +59,20 @@ postalSharedWorker = {
      *
      * @param msgClass
      * @param msg
+     * @param audience
+     * @param target
      */
-    fire: (msgClass, msg) => {
-
+    fire: (msgClass, msg, audience, target) => {
+        postalSharedWorker._postMessenger(
+            FIRE,
+            audience,
+            {
+                msgClass: msgClass,
+                message: msg,
+                audience: audience
+            },
+            target
+        );
     },
 
     /**
@@ -101,18 +112,21 @@ postalSharedWorker = {
                     // Broadcast to windows/tabs
                     range = msg.data.audience || ALL; // public, private, ALL todo: direct port messaging...
                     postalSharedWorker._postMessenger(FIRE, range, msg.data, port);
+
+                    // Invoke registered event on this thread
                     if (postalSharedWorker.events.has(msg.data.msgClass)) {
-                        postalSharedWorker.events.forEach(evt => {
-                            let address,
-                                index;
-                            for (let p of postalSharedWorker.ports) {
-                                if (p.session === event.currentTarget) {
-                                    address = p.address;
-                                    index = postalSharedWorker.ports.indexOf(p);
-                                }
+                        let address,
+                            index;
+                        for (let p of postalSharedWorker.ports) {
+                            if (p.session === event.currentTarget) {
+                                address = p.address;
+                                index = postalSharedWorker.ports.indexOf(p);
                             }
-                            evt(msg.data.message, {index: index, address: address});
-                        });
+                        }
+                        postalSharedWorker.events.get(msg.data.msgClass)(
+                            msg.data.message,
+                            {index: index, address: address}
+                        );
                     }
                     break;
 
@@ -155,13 +169,6 @@ postalSharedWorker = {
             }
         }
     },
-    // todo...
-    // on: (msgClass, action) => {
-    //
-    // },
-    // fire: (msgClass, msg) => {
-    //
-    // },
 
     /**
      * The messenger method used to post messages to the windows
@@ -175,6 +182,16 @@ postalSharedWorker = {
 
         let notification;
 
+        console.warn(port);
+
+        let _port = (!!port && port.address) ?
+            postalSharedWorker.ports.find(p => {
+                if (p.address === port.address) {
+                    return p;
+                }
+            }) :
+            false;
+
         switch (audience) {
 
             case PRIVATE:
@@ -182,8 +199,8 @@ postalSharedWorker = {
                     type: type,
                     data: msg
                 };
-                port.tries++;
-                port.postMessage(notification);
+                _port.tries++;
+                _port.session.postMessage(notification);
                 break;
 
             case PUBLIC:
@@ -216,8 +233,8 @@ postalSharedWorker = {
                     p.session.postMessage(notification);
                 }
 
-            // Remove entries that don't have any tries left
-            postalSharedWorker.ports = postalSharedWorker.ports.filter(pr => pr.tries > 0);
+                // Remove entries that don't have any tries left
+                postalSharedWorker.ports = postalSharedWorker.ports.filter(pr => pr.tries > 0);
         }
 
     }

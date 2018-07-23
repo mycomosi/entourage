@@ -26,7 +26,7 @@ const json8 = oo;
  * @param value
  * @return {string}
  */
-let decode64 = (value) => {
+export const decode64 = (value) => {
         try {
             return json8.parse(atob(value));
         }
@@ -53,7 +53,7 @@ let decode64 = (value) => {
  * @param obj
  * @return {string}
  */
-function es6Type(obj) {
+export function es6Type(obj) {
     if (obj instanceof Map) return MAP;
     else if (obj instanceof Set) return SET;
     else if (obj instanceof Array) return ARRAY;
@@ -496,10 +496,20 @@ export class StorageManager {
         ]);
     }
 
+    /**
+     *
+     * @param unit
+     * @return {string}
+     */
     encode(unit) {
         return encode64(unit);
     }
 
+    /**
+     *
+     * @param unit
+     * @return {string}
+     */
     decode(unit) {
         return decode64(unit);
     }

@@ -46,6 +46,15 @@ let _showMember = (member) => {
     <h2>${m.subtext}</h2>
     <div class="demo-content">${m.content || ''}</div>
     `;
+        let typeLinks = show.querySelectorAll('a.typez');
+        for (let link of typeLinks) {
+            link.onclick = () => {
+                let examples = show.querySelectorAll('span.exampleType');
+                for (let example of examples) {
+                    example.textContent = link.textContent;
+                }
+            };
+        }
     },
     createWebComponent = (demos) => {
         return class EntourageDemo extends HTMLElement {
