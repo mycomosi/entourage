@@ -180,11 +180,8 @@ postalSharedWorker = {
      */
     _postMessenger: (type, audience, msg, port) => {
 
-        let notification;
-
-        console.warn(port);
-
-        let _port = (!!port && port.address) ?
+        let notification,
+            _port = (!!port && port.address) ?
             postalSharedWorker.ports.find(p => {
                 if (p.address === port.address) {
                     return p;
@@ -204,7 +201,6 @@ postalSharedWorker = {
                 break;
 
             case PUBLIC:
-                // Loop through ports
                 for (let p of postalSharedWorker.ports) {
                     p.tries--;
                     if (port !== p.session) {
@@ -226,7 +222,8 @@ postalSharedWorker = {
                 for (let p of postalSharedWorker.ports) {
                     p.tries--;
                     notification = {
-                        // If buffer drops, send one last notification of type BUFFERDROPPED
+                        // If buffer drops,
+                        // send one last notification of type BUFFERDROPPED
                         type: (p.tries<1) ? BUFFERDROPPED : type,
                         data: msg
                     };
