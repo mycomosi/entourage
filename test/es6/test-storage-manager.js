@@ -3,7 +3,7 @@
 
 import {es6Type, StorageManager} from "../../src/es6/storage-manager";
 
-describe('Entourage', function() {
+describe('Storage Manager', function() {
 
     'use strict';
 
@@ -254,6 +254,120 @@ describe('Entourage', function() {
     });
 
     // PUT
+    it(`should initialize module and PUT (null - condition should never happen)`, function () {
+
+        // Given
+        let configuration = {},
+            oo = {},
+            uuidv4 = {};
+
+        // When
+        let sw = new StorageManager(configuration, oo, uuidv4);
+        let test = sw.put();
+
+        // Then
+        expect(test).to.equal(false);
+
+    });
+    it(`should initialize module and PUT to local storage`, function () {
+
+        // Given
+        global.window = {
+            localStorage: {
+                getItem: sinon.spy(() => { return true;}),
+                setItem: sinon.spy()
+            }
+        };
+        global.btoa = sinon.spy(() => {return 'base64';});
+        let config = {},
+            oo = {
+                parse: sinon.spy(() => {return {
+                    type: 'response',
+                    created: 'now',
+                    lastModified: 'lastmodified'
+                };})
+            },
+            uuidv4 = {};
+        let units = [{
+                key: 'key',
+                value: 'value'
+            }],
+            location = {type: 'local'},
+            options = {};
+
+        // When
+        let sw = new StorageManager(config, oo, uuidv4);
+        let test = sw.put(units, location, options);
+
+        // Then
+        sinon.assert.calledOnce(window.localStorage.setItem);
+    });
+    // it(`should initialize module and run INFO from session storage`, function () {
+    //
+    //     // Given
+    //     global.window = {
+    //         sessionStorage: {
+    //             getItem: sinon.spy(r => {return r;})
+    //         }
+    //     };
+    //     global.atob = sinon.spy(r => {return r;});
+    //     let config = {},
+    //         oo = {
+    //             parse: sinon.spy(() => {return {
+    //                 type: 'response',
+    //                 created: 'now',
+    //                 lastModified: 'lastmodified'
+    //             };})
+    //         },
+    //         uuidv4 = {};
+    //     let request = 'request',
+    //         location = {type: 'session'},
+    //         options = {};
+    //
+    //     // When
+    //     let sw = new StorageManager(config, oo, uuidv4);
+    //     let test = sw.info(request, location, options);
+    //     let expected = {
+    //         type: 'response',
+    //         created: 'now',
+    //         lastModified: 'lastmodified'
+    //     };
+    //
+    //     // Then
+    //
+    //     expect(test).to.deep.equal(expected);
+    // });
+    // it(`should initialize module and run INFO from shared storage`, function () {
+    //
+    //     // Given
+    //     global.window = {
+    //         sessionStorage: {
+    //             getItem: sinon.spy(r => {return r;})
+    //         }
+    //     };
+    //     global.atob = sinon.spy(r => {return r;});
+    //     let config = {
+    //             info: sinon.spy(() => {
+    //                 return {
+    //                     value: 'testValue'
+    //                 };
+    //             })
+    //         },
+    //         oo = {
+    //             parse: sinon.spy(() => {return 'decoded';})
+    //         },
+    //         uuidv4 = {};
+    //     let request = 'request',
+    //         location = {type: 'shared'},
+    //         options = {};
+    //
+    //     // When
+    //     let sw = new StorageManager(config, oo, uuidv4);
+    //     let response = sw.get(request, location, options);
+    //
+    //     // Then
+    //     expect(response).to.equal('testValue');
+    // });
 
 
     // DELETE

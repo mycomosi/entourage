@@ -6,6 +6,8 @@
 
 import oo from "json8";
 import uuidv4 from 'uuid';
+import querystring from "query-string";
+
 
 import * as S from "./Strings";
 import Aeson from 'aeson';
@@ -231,7 +233,7 @@ export class Entourage {
          * Custom logging system
          * @type {Logger}
          */
-        this.Logger = new Logger(configuration.logger);
+        this.Logger = new Logger(configuration.logger, window);
 
         // Hook in postal forwarding here (cc)
         // todo: Make this more dynamic...
@@ -266,7 +268,7 @@ export class Entourage {
         /**
          * Historian keeps track of url browsing history (including queryparams and hashes)
          */
-        this.Historian = new Historian(configuration.historian);
+        this.Historian = new Historian(configuration.historian, querystring);
 
         /**
          *  Storage Manager interacts with session & local storage in the browser and also a new "shared" storage concept (sharedWorker)

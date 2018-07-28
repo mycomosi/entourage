@@ -4,18 +4,21 @@
  */
 
 
-import querystring from "query-string";
 import * as S from "./Strings";
+const STRING = 'string';
 
-let onPopStateCallback = false;
 
 export class Historian {
-    constructor(configuration) {
+    constructor(configuration, querystring) {
+
+        this.qs = querystring;
+        this.onPopStateCallback = null;
+
         window.onpopstate = (event) => {
             if (event && event.state) {
-                if (this._onPopStateCb &&
-                    typeof this._onPopStateCb === S.FUNCTION) {
-                    this._onPopStateCb(event.state);
+                if (this.onPopStateCallback &&
+                    typeof this.onPopStateCallback === S.FUNCTION) {
+                    this.onPopStateCallback(event.state);
                 }
                 // pushSessionStorage here...
             }
@@ -27,7 +30,8 @@ export class Historian {
      *  @param {onPopStateCb} fn - Callback to be executed on 'onpopstate' event
      */
     onPopState(fn) {
-        onPopStateCallback = fn;
+        this.onPopStateCallback = fn;
+
     }
 
     pushState(state) {
@@ -49,7 +53,7 @@ export class Historian {
      * @return {object | boolean} - Returns decoded object or false if no object found
      */
     _getObjectFromUrlParam(param, decript = false) {
-        let qs = querystring.parse(location.search);
+        let qs = this.qs.parse(window.location.search);
 
         if (decript) {
             return (typeof param === STRING &&

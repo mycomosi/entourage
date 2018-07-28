@@ -8,17 +8,17 @@
 
 import * as S from "./Strings";
 
-let _log = window.console.log,
-    _info = window.console.info,
-    _warn = window.console.warn,
-    _error = window.console.error,
-    _debug = window.console.debug,
+let _log,
+    _info,
+    _warn,
+    _error,
+    _debug,
     _levels = {},
     _carbonCopies = new Set();
 
 export class Logger {
 
-    constructor(configuration) {
+    constructor(configuration, win) {
 
         // Log levels
         _levels = {
@@ -28,6 +28,13 @@ export class Logger {
             error: configuration.error || false,
             debug: configuration.debug || false
         };
+
+        // Save actual window console command in closure variables
+        _log = win.console.log;
+        _info = win.console.info;
+        _warn = win.console.warn;
+        _error = win.console.error;
+        _debug = win.console.debug;
 
         /**
          *  Get current logger log level settings
@@ -57,46 +64,46 @@ export class Logger {
         this.subscribe = this._subscribe;
 
         // Override window console methods
-        window.console = {};
-        window.console.log = (logMessage) => {
+        win.console = {};
+        win.console.log = (logMessage) => {
             if (!_levels.log) {
-
+                return false;
             }
             else {
                 this._cc(S.LOG, logMessage);
                 _log(logMessage);
             }
         };
-        window.console.info = (logMessage) => {
+        win.console.info = (logMessage) => {
             if (!_levels.info) {
-
+                return false;
             }
             else {
                 this._cc(S.INFO, logMessage);
                 _info(logMessage);
             }
         };
-        window.console.warn = (logMessage) => {
+        win.console.warn = (logMessage) => {
             if (!_levels.warn) {
-
+                return false;
             }
             else {
                 this._cc(S.WARN, logMessage);
                 _warn(logMessage);
             }
         };
-        window.console.error = (logMessage) => {
+        win.console.error = (logMessage) => {
             if (!_levels.error) {
-
+                return false;
             }
             else {
                 this._cc(S.ERROR, logMessage);
                 _error(logMessage);
             }
         };
-        window.console.debug = (logMessage) => {
+        win.console.debug = (logMessage) => {
             if (!_levels.debug) {
-
+                return false;
             }
             else {
                 this._cc(S.DEBUG, logMessage);
@@ -145,7 +152,7 @@ export class Logger {
         else if (typeof fn === S.OBJECT && fn.forEach) {
             fn.forEach(cb => {
                 _carbonCopies.add(cb);
-            })
+            });
         }
     }
 

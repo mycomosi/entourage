@@ -7,11 +7,11 @@
 
 export class SecurityManager {
 
-    constructor(configuration) {
+    constructor() {
 
     }
 
-    processOauth(action) {
+    processOauth() {
         return false;
     }
 }
