@@ -10,19 +10,37 @@
   "scripts": {
     "build": "rollup -c rollup.es.config.js",
     "demo": "rollup -c rollup.demo.config.js",
-    "workers": "rollup -c rollup.storageworker.config.js && rollup -c rollup.logworker.config.js"
+    "workers": "rollup -c rollup.storageworker.config.js && rollup -c rollup.logworker.config.js",
+    "_transpile-test": "rollup -c rollup.test.js",
+    "test": "npm run _transpile-test && mocha",
+    "coverage": "cross-env NODE_ENV=test nyc npm test",
+    "doc": "jsdoc -c jsdoc.json"
   },
   "devDependencies": {
     "rollup": "^0.52.0",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-commonjs": "^7.0.0",
     "rollup-plugin-json": "^2.3.0",
+    "rollup-plugin-eslint": "^3.0.0",
     "rollup-plugin-multi-entry": "^2.0.2",
     "rollup-plugin-node-resolve": "2.0.0",
     "rollup-plugin-replace": "^1.2.1",
-    "rollup-plugin-uglify-es": "0.0.1"
+    "rollup-plugin-uglify-es": "0.0.1",
+    "sinon": "^1.17.7",
+    "sinon-chai": "^2.8.0",
+    "babel-plugin-istanbul": "^4.0.0",
+    "babel-preset-es2015-rollup": "^3.0.0",
+    "babelrc-rollup": "^3.0.0",
+    "chai": "^3.5.0",
+    "cross-env": "^3.1.4",
+    "docdash": "^0.4.0",
+    "jsdoc": "^3.5.5",
+    "mocha": "^3.2.0",
+    "nyc": "^10.1.2"
   },
   "dependencies": {
+    "css-element-queries": "^0.4.0",
+    "lodash-es": "^4.17.4",
     "aeson": "0.0.3",
     "json8": "^0.9.2",
     "postalworker": "^2.0.9",
@@ -35,5 +53,11 @@
     "url": "git+https://github.com/mycomosi/entourage.git"
   },
   "author": "Russ Stratfull <russ.stratfull@mycom-osi.com> (http://russandsonya.com/russ)",
+  "nyc": {
+    "reporter": [
+      "text",
+      "html"
+    ]
+  },
   "license": "ISC"
 }

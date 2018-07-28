@@ -5,21 +5,15 @@
  */
 
 import * as S from "./Strings";
-import oo from "json8";
-import uuidv4 from 'uuid';
-
-
 const // Types as constants
-    STRING = 'string',
-    NUMBER = 'number',
-    BOOLEAN = 'boolean',
+    // STRING = 'string',
+    // NUMBER = 'number',
+    // BOOLEAN = 'boolean',
     OBJECT = 'object',
     MAP = 'map',
     SET = 'set',
-    ARRAY = 'array',
-    UNDEFINED = 'undefined';
-
-const json8 = oo;
+    ARRAY = 'array';
+    // UNDEFINED = 'undefined';
 
 /**
  * Decode json8 serialized objects from base64 string
@@ -62,13 +56,19 @@ export function es6Type(obj) {
 
 let sharedPut,
     sharedGet,
-    sharedInfo,
     sharedDelete,
     sharedSerialize;
 
+let json8, uuid;
+
 export class StorageManager {
 
-    constructor(configuration) {
+    constructor(configuration, oo, uuidv4) {
+
+        json8 = oo;
+        uuid = uuidv4;
+
+        this.errors = [];
 
         // Public
         /**
@@ -143,7 +143,6 @@ export class StorageManager {
          * @return {boolean}
          */
         this.delete = (units, location, options) => {
-            let response = false;
             if (units &&
                 location && location.type &&
                 this._storageTypes().has(location.type)) {
@@ -164,7 +163,7 @@ export class StorageManager {
          * @param options
          * @return {string | boolean} - Returns json string of current repository data
          */
-        this.serialize = (location, options) => {
+        this.serialize = (location/*, options*/) => {
             let response = false;
             if (location && location.type &&
                 this._storageTypes().has(location.type)) {
@@ -182,10 +181,6 @@ export class StorageManager {
         }
         if (typeof configuration.get === S.FUNCTION) {
             sharedGet = configuration.get || function () {
-            }; // todo
-        }
-        if (typeof configuration.info === S.FUNCTION) {
-            sharedInfo = configuration.info || function () {
             }; // todo
         }
         if (typeof configuration.delete === S.FUNCTION) {
@@ -206,10 +201,9 @@ export class StorageManager {
     /**
      *
      * @param units
-     * @param options
      * @private
      */
-    _prePackUnits(units, options) {
+    _prePackUnits(units/*, options*/) {
         return units.map(unit => {
             let u = {},
                 dataType = typeof unit.value,
@@ -263,15 +257,16 @@ export class StorageManager {
     /**
      * Put units into localstorage
      * @param units
-     * @param options
      * @return {boolean}
      * @private
      */
-    _putLocalStorage(units, options) {
-        let result = false;
+    _putLocalStorage(units/*, options*/) {
         for (let unit of units) {
             // Is it already in storage?
-            if (!!window.localStorage.getItem(unit.key)) {
+            /*eslint no-extra-boolean-cast: "error"*/
+            let item = !!window.localStorage.getItem(unit.key);
+            item = Boolean(item);
+            if (item) {
                 let cache = json8.parse(atob(window.localStorage.getItem(unit.key)));
                 let update = encode64({
                     type: unit.type,
@@ -299,11 +294,10 @@ export class StorageManager {
     /**
      *
      * @param request
-     * @param options
      * @return {string | null}
      * @private
      */
-    _getLocalStorage(request, options) {
+    _getLocalStorage(request/*, options*/) {
         let result = window.localStorage.getItem(request);
         if (result) {
             return decode64(result);
@@ -335,7 +329,9 @@ export class StorageManager {
                 window.atob(repository[key]);
                 out[key] = decode64(repository[key]);
             }
-            catch(e) {}
+            catch(e) {
+                this.errors.push(e);
+            }
         });
         return JSON.stringify(out);
     }
@@ -344,14 +340,14 @@ export class StorageManager {
     /**
      *
      * @param units
-     * @param options
      * @private
      */
-    _putSessionStorage(units, options) {
-        let result = false;
+    _putSessionStorage(units/*, options*/) {
         for (let unit of units) {
             // Is it already in storage?
-            if (!!window.sessionStorage.getItem(unit.key)) {
+            let item = !!window.sessionStorage.getItem(unit.key);
+            item = Boolean(item);
+            if (item) {
                 let cache = json8.parse(atob(window.sessionStorage.getItem(unit.key)));
                 let update = encode64({
                     type: unit.type,
@@ -379,11 +375,10 @@ export class StorageManager {
     /**
      *
      * @param request
-     * @param options
      * @return {*}
      * @private
      */
-    _getSessionStorage(request, options) {
+    _getSessionStorage(request/*, options*/) {
         let result = window.sessionStorage.getItem(request);
         if (result) {
             return decode64(result);
@@ -415,7 +410,9 @@ export class StorageManager {
                 window.atob(repository[key]);
                 out[key] = decode64(repository[key]);
             }
-            catch(e) {}
+            catch(e) {
+                this.errors.push(e);
+            }
         });
         return JSON.stringify(out);
     }
@@ -436,7 +433,7 @@ export class StorageManager {
      * @private
      */
     _getSharedStorage(request, options) {
-        if (sharedGet) return sharedGet(request, options)
+        if (sharedGet) return sharedGet(request, options);
     }
 
     /**
@@ -465,7 +462,7 @@ export class StorageManager {
      * @private
      */
     _getUniqueKey() {
-        return uuidv4();
+        return uuid();
     }
 
     /**

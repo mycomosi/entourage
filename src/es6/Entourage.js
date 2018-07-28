@@ -3,6 +3,10 @@
  *  @Author Russ Stratfull 2018
  */
 
+
+import oo from "json8";
+import uuidv4 from 'uuid';
+
 import * as S from "./Strings";
 import Aeson from 'aeson';
 import {Historian} from "./historian";
@@ -152,7 +156,12 @@ let // Synchronous loaders...
         }
     };
 
-
+/**
+ *
+ * @param entry
+ * @return {*}
+ * @private
+ */
 let _convertType = (entry) => {
     console.info(entry);
     return entry;
@@ -201,8 +210,6 @@ let // Assembly stages...
             });
         });
     };
-
-
 
 
 export class Entourage {
@@ -316,7 +323,7 @@ export class Entourage {
                 };
             }
 
-            this.StorageManager = new StorageManager(configuration.storage);
+            this.StorageManager = new StorageManager(configuration.storage, oo, uuidv4);
 
             if (this.PostalWorker) {
                 // Subscribe to postal message classes used by storage
